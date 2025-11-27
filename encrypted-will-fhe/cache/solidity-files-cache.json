@@ -1,0 +1,41 @@
+{
+  "_format": "hh-sol-cache-2",
+  "files": {
+    "D:\\Web3Code\\encrypted-will-fhe\\contracts\\SimpleEncryptedWill.sol": {
+      "lastModificationDate": 1764251633326,
+      "contentHash": "60254da98ae2c57a6322cac2c0c4943c",
+      "sourceName": "contracts/SimpleEncryptedWill.sol",
+      "solcConfig": {
+        "version": "0.8.24",
+        "settings": {
+          "evmVersion": "paris",
+          "optimizer": {
+            "enabled": false,
+            "runs": 200
+          },
+          "outputSelection": {
+            "*": {
+              "*": [
+                "abi",
+                "evm.bytecode",
+                "evm.deployedBytecode",
+                "evm.methodIdentifiers",
+                "metadata"
+              ],
+              "": [
+                "ast"
+              ]
+            }
+          }
+        }
+      },
+      "imports": [],
+      "versionPragmas": [
+        "^0.8.24"
+      ],
+      "artifacts": [
+        "SimpleEncryptedWill"
+      ]
+    }
+  }
+}
