@@ -201,19 +201,9 @@ async function getWill() {
   const result = await contract.getWill(queryId.value);
   const [testator, bene, condCipher, payloadCipher, unlocked, executed] = result;
 
-  let condText = "";
-  let payloadText = "";
-
-  try {
-    condText = toUtf8String(condCipher);
-  } catch (e) {
-    condText = "(cannot decode conditionCipher as UTF-8)";
-  }
-  try {
-    payloadText = toUtf8String(payloadCipher);
-  } catch (e) {
-    payloadText = "(cannot decode payloadCipher as UTF-8)";
-  }
+  // 這裡不再用 try/catch，直接解碼
+  const condText = toUtf8String(condCipher);
+  const payloadText = toUtf8String(payloadCipher);
 
   willInfo.value = {
     testator,
