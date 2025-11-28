@@ -95,7 +95,19 @@ import { ref, computed } from "vue";
 import { BrowserProvider, Contract, toUtf8Bytes, toUtf8String } from "ethers";
 import SimpleEncryptedWillJson from "../contracts/SimpleEncryptedWill.json";
 
-// 你前面部署的地址
+// 針對這份合約定義一個型別，避免 TS 覺得方法可能不存在
+interface SimpleEncryptedWillContract extends Contract {
+  createWill(
+    beneficiary: string,
+    conditionCipher: Uint8Array,
+    payloadCipher: Uint8Array
+  ): Promise<any>;
+  nextId(): Promise<bigint>;
+  unlockWill(id: number): Promise<any>;
+  getWill(id: number): Promise<any>;
+}
+
+// 你部署的地址
 const CONTRACT_ADDRESS = "0x7C5c5170bB940AECb47A651d7FC954D5fCE398cD";
 
 const connected = ref(false);
@@ -122,7 +134,7 @@ const willInfo = ref<null | {
 // 一開始都還是 null，connectWallet 之後才會塞進真正的物件
 let provider: BrowserProvider | null = null;
 let signer: any | null = null;
-let contract: Contract | null = null;
+let contract: SimpleEncryptedWillContract | null = null;
 
 const shortAddr = computed(() =>
   account.value ? account.value.slice(0, 6) + "..." + account.value.slice(-4) : ""
@@ -140,7 +152,11 @@ async function connectWallet() {
   connected.value = true;
 
   const abi = (SimpleEncryptedWillJson as any).abi;
-  contract = new Contract(CONTRACT_ADDRESS, abi, signer);
+  contract = new Contract(
+    CONTRACT_ADDRESS,
+    abi,
+    signer
+  ) as SimpleEncryptedWillContract;
 
   message.value = "Wallet connected: " + account.value;
 }
@@ -154,14 +170,15 @@ async function createWill() {
   const condBytes = toUtf8Bytes(conditionPlain.value || "condition-demo");
   const payloadBytes = toUtf8Bytes(payloadPlain.value || "payload-demo");
 
-  const tx = await contract.createWill(
+  const c = contract; // 縮短一下寫法，TS 也可以正確推論
+  const tx = await c.createWill(
     beneficiary.value,
     condBytes,
     payloadBytes
   );
   await tx.wait();
 
-  const nextId = await contract.nextId();
+  const nextId = await c.nextId();
   createdId.value = Number(nextId) - 1;
 
   message.value = "Will created";
@@ -177,7 +194,8 @@ async function unlockWill() {
     return;
   }
 
-  const tx = await contract.unlockWill(unlockId.value);
+  const c = contract;
+  const tx = await c.unlockWill(unlockId.value);
   await tx.wait();
 
   message.value = "Will unlocked";
@@ -193,8 +211,16 @@ async function getWill() {
     return;
   }
 
-  const result = await contract.getWill(queryId.value);
-  const [testator, bene, condCipher, payloadCipher, unlocked, executed] = result;
+  const c = contract;
+  const result = await c.getWill(queryId.value);
+  const [testator, bene, condCipher, payloadCipher, unlocked, executed] = result as [
+    string,
+    string,
+    Uint8Array,
+    Uint8Array,
+    boolean,
+    boolean
+  ];
 
   let condText = "";
   let payloadText = "";
