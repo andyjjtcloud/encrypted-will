@@ -206,12 +206,12 @@ async function getWill() {
 
   try {
     condText = toUtf8String(condCipher);
-  } catch {
+  } catch (e) {
     condText = "(cannot decode conditionCipher as UTF-8)";
   }
   try {
     payloadText = toUtf8String(payloadCipher);
-  } catch {
+  } catch (e) {
     payloadText = "(cannot decode payloadCipher as UTF-8)";
   }
 
