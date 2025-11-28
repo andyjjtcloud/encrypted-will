@@ -1,4 +1,4 @@
-<template>
+<template> 
   <div class="p-4 space-y-4">
     <h1 class="text-xl font-bold">🔐 Simple Encrypted Will (Sepolia)</h1>
 
@@ -25,8 +25,11 @@
 
       <label class="block">
         Will Content (plain text, demo)
-        <textarea v-model="payloadPlain" rows="3"
-                  class="border w-full px-2 py-1 rounded" />
+        <textarea
+          v-model="payloadPlain"
+          rows="3"
+          class="border w-full px-2 py-1 rounded"
+        />
       </label>
 
       <button @click="createWill" class="border px-3 py-1 rounded">
@@ -44,8 +47,11 @@
 
       <label class="block">
         Will ID
-        <input v-model.number="unlockId" type="number"
-               class="border w-full px-2 py-1 rounded" />
+        <input
+          v-model.number="unlockId"
+          type="number"
+          class="border w-full px-2 py-1 rounded"
+        />
       </label>
 
       <button @click="unlockWill" class="border px-3 py-1 rounded">
@@ -59,8 +65,11 @@
 
       <label class="block">
         Will ID
-        <input v-model.number="queryId" type="number"
-               class="border w-full px-2 py-1 rounded" />
+        <input
+          v-model.number="queryId"
+          type="number"
+          class="border w-full px-2 py-1 rounded"
+        />
       </label>
 
       <button @click="getWill" class="border px-3 py-1 rounded">
@@ -86,7 +95,6 @@ import { ref, computed } from "vue";
 import { BrowserProvider, Contract, toUtf8Bytes, toUtf8String } from "ethers";
 import SimpleEncryptedWillJson from "../contracts/SimpleEncryptedWill.json";
 
-
 // 你前面部署的地址
 const CONTRACT_ADDRESS = "0x7C5c5170bB940AECb47A651d7FC954D5fCE398cD";
 
@@ -111,9 +119,10 @@ const willInfo = ref<null | {
   executed: boolean;
 }>(null);
 
-let provider: BrowserProvider;
-let signer: any;
-let contract: Contract;
+// 一開始都還是 null，connectWallet 之後才會塞進真正的物件
+let provider: BrowserProvider | null = null;
+let signer: any | null = null;
+let contract: Contract | null = null;
 
 const shortAddr = computed(() =>
   account.value ? account.value.slice(0, 6) + "..." + account.value.slice(-4) : ""
@@ -137,15 +146,18 @@ async function connectWallet() {
 }
 
 async function createWill() {
-  if (!connected.value) return;
+  if (!connected.value || !contract) {
+    message.value = "請先 Connect Wallet";
+    return;
+  }
 
-  const condBytes = toUtf8Bytes(conditionPlain.value);
-  const payloadBytes = toUtf8Bytes(payloadPlain.value);
+  const condBytes = toUtf8Bytes(conditionPlain.value || "condition-demo");
+  const payloadBytes = toUtf8Bytes(payloadPlain.value || "payload-demo");
 
   const tx = await contract.createWill(
     beneficiary.value,
-    "0x" + Buffer.from(condBytes).toString("hex"),
-    "0x" + Buffer.from(payloadBytes).toString("hex")
+    condBytes,
+    payloadBytes
   );
   await tx.wait();
 
@@ -156,7 +168,14 @@ async function createWill() {
 }
 
 async function unlockWill() {
-  if (!connected.value || unlockId.value === null) return;
+  if (!connected.value || !contract) {
+    message.value = "請先 Connect Wallet";
+    return;
+  }
+  if (unlockId.value === null) {
+    alert("請輸入 Will ID");
+    return;
+  }
 
   const tx = await contract.unlockWill(unlockId.value);
   await tx.wait();
@@ -165,7 +184,14 @@ async function unlockWill() {
 }
 
 async function getWill() {
-  if (!connected.value || queryId.value === null) return;
+  if (!connected.value || !contract) {
+    message.value = "請先 Connect Wallet";
+    return;
+  }
+  if (queryId.value === null) {
+    alert("請輸入 Will ID");
+    return;
+  }
 
   const result = await contract.getWill(queryId.value);
   const [testator, bene, condCipher, payloadCipher, unlocked, executed] = result;
@@ -173,8 +199,16 @@ async function getWill() {
   let condText = "";
   let payloadText = "";
 
-  try { condText = toUtf8String(condCipher); } catch {}
-  try { payloadText = toUtf8String(payloadCipher); } catch {}
+  try {
+    condText = toUtf8String(condCipher);
+  } catch {
+    condText = "(cannot decode conditionCipher as UTF-8)";
+  }
+  try {
+    payloadText = toUtf8String(payloadCipher);
+  } catch {
+    payloadText = "(cannot decode payloadCipher as UTF-8)";
+  }
 
   willInfo.value = {
     testator,
