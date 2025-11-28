@@ -178,7 +178,7 @@ async function unlockWill() {
     return;
   }
   if (unlockId.value === null) {
-    alert("請輸入 Will ID";
+    alert("請輸入 Will ID");
     return;
   }
 
@@ -194,14 +194,13 @@ async function getWill() {
     return;
   }
   if (queryId.value === null) {
-    alert("請輸入 Will ID";
+    alert("請輸入 Will ID");
     return;
   }
 
   const result = await contract.getWill(queryId.value);
   const [testator, bene, condCipher, payloadCipher, unlocked, executed] = result;
 
-  // 這裡不再用 try/catch，直接解碼
   const condText = toUtf8String(condCipher);
   const payloadText = toUtf8String(payloadCipher);
 
