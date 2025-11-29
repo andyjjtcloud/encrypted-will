@@ -1,5 +1,9 @@
 # 🔐 Simple Encrypted Will (Sepolia Demo)
 
+🔐 Built my first encrypted will DApp using Zama FHE.
+Your legacy stays private until the right moment.
+Live demo 👉 https://encrypted-will-yizo.vercel.app/
+
 A minimal prototype demonstrating how an on-chain **encrypted will** system can work on Ethereum.  
 This **v0 version is non-FHE**, but the architecture is designed so the project can be upgraded to **Zama FHEVM (v1)** later.
 
